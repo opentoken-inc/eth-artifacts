@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.24;
 
 library SafeMath {
   function mul(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -65,7 +65,7 @@ contract TokenImpl is Token {
           allowed[_from][msg.sender] = allowance.sub(_value);
       }
 
-      balances[msg.sender] = balances[msg.sender].sub(_value);
+      balances[_from] = balances[_from].sub(_value);
       balances[_to] = balances[_to].add(_value);
       emit Transfer(msg.sender, _to, _value);
       return true;
@@ -125,7 +125,7 @@ library ECTools {
     uint len = bytes(_msg).length;
     require(len > 0);
     bytes memory prefix = "\x19Ethereum Signed Message:\n";
-    return keccak256(prefix, uintToString(len), _msg);
+    return keccak256(abi.encodePacked(prefix, uintToString(len), _msg));
   }
 
   // @dev Converts a uint in a string
@@ -230,7 +230,7 @@ contract ERC20Channel {
     require(hasOpened);
     require(paymentAmount <= amount);
 
-    return uint256(keccak256(address(this), 'close', paymentAmount));
+    return uint256(keccak256(abi.encodePacked(address(this), 'close', paymentAmount)));
   }
 
   function recoverOtherToken(Token _token, uint256 _value) public {
@@ -239,6 +239,7 @@ contract ERC20Channel {
     _token.transfer(assistant, _value);
   }
 }
+
 
 contract ERC20ChannelCreator {
   address public backupOwner;
